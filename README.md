@@ -24,8 +24,8 @@ In modern retail banking, transactions settle irreversibly within seconds. Tradi
 - **Project Supervisor**: Sir Muhammad Khalid
 - **Project Team**:
   - **Muhammad Abdullah** (25k-5538)
-  - **Aneeq Ahmad** (25k-5597)
-  - **Shuja-ur-Rehman** (25k-5747)
+  - **Muhammad Aneeq** (25k-5597)
+  - **Shuja Ahmed** (25k-5747)
   - **Abdul Ahad** (25k-5578)
 
 ---
