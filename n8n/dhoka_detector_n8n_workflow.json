@@ -1,0 +1,270 @@
+{
+  "name": "Dhoka Detector — Clean Multi-Event Email Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "dhoka-fraud-alert",
+        "options": {}
+      },
+      "id": "node-webhook-01",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [160, 320],
+      "webhookId": "dhoka-fraud-alert"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false
+          },
+          "conditions": [
+            {
+              "id": "cond-otp",
+              "leftValue": "={{ ($json.body?.event || $json.event || $json.body?.decision || $json.decision || '').toString() }}",
+              "rightValue": "OTP",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "node-if-otp",
+      "name": "Route: Is OTP?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [380, 200]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false
+          },
+          "conditions": [
+            {
+              "id": "cond-hold",
+              "leftValue": "={{ ($json.body?.event || $json.event || $json.body?.decision || $json.decision || '').toString() }}",
+              "rightValue": "HOLD",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "node-if-hold",
+      "name": "Route: Is Hold?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [580, 320]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false
+          },
+          "conditions": [
+            {
+              "id": "cond-approved",
+              "leftValue": "={{ ($json.body?.event || $json.event || $json.body?.decision || $json.decision || '').toString() }}",
+              "rightValue": "APPROV",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "node-if-approved",
+      "name": "Route: Is Approved?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [780, 440]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false
+          },
+          "conditions": [
+            {
+              "id": "cond-declined",
+              "leftValue": "={{ ($json.body?.event || $json.event || $json.body?.decision || $json.decision || '').toString() }}",
+              "rightValue": "DECLIN",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "node-if-declined",
+      "name": "Route: Is Declined?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [980, 560]
+    },
+    {
+      "parameters": {
+        "toEmail": "={{ $json.body?.to_email || $json.to_email }}",
+        "subject": "=Raast Verification Code: {{ $json.body?.otp_code || $json.otp_code }}",
+        "html": "=<div style=\"background-color: #f8fafc; padding: 40px 15px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1e293b;\">\n  <div style=\"max-width: 440px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05); overflow: hidden;\">\n    \n    <!-- Professional Bank Header -->\n    <div style=\"padding: 24px 32px 20px; border-bottom: 1px solid #f1f5f9; text-align: left;\">\n      <div style=\"font-size: 11px; font-weight: 800; letter-spacing: 1.5px; color: #0284c7; text-transform: uppercase;\">STATE BANK RAAST · SECURE PAY</div>\n      <div style=\"font-size: 18px; font-weight: 800; color: #0f172a; margin-top: 4px;\">Verification Code</div>\n    </div>\n\n    <!-- Main Body -->\n    <div style=\"padding: 28px 32px; text-align: left;\">\n      <p style=\"font-size: 13px; color: #475569; line-height: 1.6; margin: 0 0 16px;\">\n        A transfer request of <strong style=\"color: #0f172a;\">PKR {{ ($json.body?.amount || $json.amount || 0).toLocaleString() }}</strong> was initiated from your account. Use the code below to authorize this transaction:\n      </p>\n\n      <!-- Clean Professional OTP Box (No purple, pure modern slate) -->\n      <div style=\"background-color: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 12px; padding: 20px 16px; text-align: center; margin: 20px 0;\">\n        <div style=\"font-size: 10px; font-weight: 700; color: #64748b; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px;\">ONE-TIME CODE</div>\n        <div style=\"font-size: 42px; font-weight: 800; letter-spacing: 10px; color: #0f172a; font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;\">\n          {{ $json.body?.otp_code || $json.otp_code }}\n        </div>\n      </div>\n\n      <p style=\"font-size: 12px; color: #64748b; line-height: 1.5; margin: 16px 0 0;\">\n        ⏱ Valid for <strong style=\"color: #0f172a;\">3 minutes</strong>. If you did not initiate this request, call <strong>111-BANK</strong> immediately to secure your account.\n      </p>\n    </div>\n\n    <!-- Subtle Legal Bank Footer -->\n    <div style=\"padding: 16px 32px; background-color: #f8fafc; border-top: 1px solid #f1f5f9; text-align: center;\">\n      <p style=\"font-size: 10px; color: #94a3b8; margin: 0;\">State Bank of Pakistan · Raast Instant Fast Payment Rail</p>\n    </div>\n  </div>\n</div>"
+      },
+      "id": "node-otp-email",
+      "name": "Customer OTP Email (Clean)",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [620, 100]
+    },
+    {
+      "parameters": {
+        "toEmail": "={{ $json.body?.to_email || $json.to_email }}",
+        "subject": "=Raast Payment Notice: Transfer Under Review (PKR {{ ($json.body?.amount || $json.amount || 0).toLocaleString() }})",
+        "html": "=<div style=\"background-color: #f8fafc; padding: 40px 15px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1e293b;\">\n  <div style=\"max-width: 460px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05); overflow: hidden;\">\n    \n    <!-- Bank Header -->\n    <div style=\"padding: 24px 32px 20px; border-bottom: 1px solid #f1f5f9; text-align: left;\">\n      <div style=\"font-size: 11px; font-weight: 800; letter-spacing: 1.5px; color: #0284c7; text-transform: uppercase;\">STATE BANK RAAST · SECURE PAY</div>\n      <div style=\"font-size: 18px; font-weight: 800; color: #0f172a; margin-top: 4px;\">Transfer Under Routine Review</div>\n    </div>\n\n    <!-- Main Content -->\n    <div style=\"padding: 28px 32px; text-align: left;\">\n      <!-- Amber Status Callout -->\n      <div style=\"background-color: #fffbeb; border: 1px solid #fef3c7; border-radius: 12px; padding: 14px 18px; margin-bottom: 20px;\">\n        <div style=\"font-size: 11px; font-weight: 800; color: #b45309; text-transform: uppercase; letter-spacing: 1px;\">⏳ Status: Paused for Verification</div>\n        <div style=\"font-size: 13px; font-weight: 600; color: #92400e; margin-top: 2px;\">Your transaction is on hold and will be reviewed soon.</div>\n      </div>\n\n      <p style=\"font-size: 13px; color: #475569; line-height: 1.6; margin: 0 0 16px;\">\n        A transfer request was initiated from your account. To protect your funds against unauthorized activity, this payment is temporarily paused for routine verification by our 24/7 compliance team.\n      </p>\n\n      <table width=\"100%\" style=\"font-size: 13px; border-collapse: collapse; margin-bottom: 20px;\">\n        <tr style=\"border-bottom: 1px solid #f1f5f9;\">\n          <td style=\"padding: 10px 0; color: #64748b;\">Transfer Amount</td>\n          <td align=\"right\" style=\"padding: 10px 0; font-weight: 800; color: #0f172a; font-family: monospace;\">PKR {{ ($json.body?.amount || $json.amount || 0).toLocaleString() }}</td>\n        </tr>\n        <tr style=\"border-bottom: 1px solid #f1f5f9;\">\n          <td style=\"padding: 10px 0; color: #64748b;\">Target Beneficiary</td>\n          <td align=\"right\" style=\"padding: 10px 0; font-weight: 700; color: #0f172a; font-family: monospace;\">{{ $json.body?.recipient_id || $json.recipient_id }}</td>\n        </tr>\n        <tr style=\"border-bottom: 1px solid #f1f5f9;\">\n          <td style=\"padding: 10px 0; color: #64748b;\">Payment Rail</td>\n          <td align=\"right\" style=\"padding: 10px 0; font-weight: 600; color: #0284c7;\">Raast Instant Pay</td>\n        </tr>\n      </table>\n\n      <p style=\"font-size: 12px; color: #64748b; line-height: 1.5; margin: 0;\">\n        <strong>No action is required from you at this time.</strong> You will receive an automated confirmation email as soon as the compliance officer completes the evaluation.\n      </p>\n    </div>\n\n    <!-- Legal Bank Footer -->\n    <div style=\"padding: 16px 32px; background-color: #f8fafc; border-top: 1px solid #f1f5f9; text-align: center;\">\n      <p style=\"font-size: 10px; color: #94a3b8; margin: 0;\">State Bank of Pakistan · Raast 24/7 Fraud Prevention Operations</p>\n    </div>\n  </div>\n</div>"
+      },
+      "id": "node-hold-email",
+      "name": "Customer Hold Notice Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [820, 220]
+    },
+    {
+      "parameters": {
+        "toEmail": "={{ $json.body?.to_email || $json.to_email }}",
+        "subject": "=Raast Payment Notice: Transfer Approved & Released (PKR {{ ($json.body?.amount || $json.amount || 0).toLocaleString() }})",
+        "html": "=<div style=\"background-color: #f8fafc; padding: 40px 15px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1e293b;\">\n  <div style=\"max-width: 460px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05); overflow: hidden;\">\n    \n    <!-- Bank Header -->\n    <div style=\"padding: 24px 32px 20px; border-bottom: 1px solid #f1f5f9; text-align: left;\">\n      <div style=\"font-size: 11px; font-weight: 800; letter-spacing: 1.5px; color: #059669; text-transform: uppercase;\">STATE BANK RAAST · PAYMENT SUCCESS</div>\n      <div style=\"font-size: 18px; font-weight: 800; color: #0f172a; margin-top: 4px;\">Transfer Approved & Released</div>\n    </div>\n\n    <!-- Main Content -->\n    <div style=\"padding: 28px 32px; text-align: left;\">\n      <!-- Emerald Status Callout -->\n      <div style=\"background-color: #ecfdf5; border: 1px solid #d1fae5; border-radius: 12px; padding: 14px 18px; margin-bottom: 20px;\">\n        <div style=\"font-size: 11px; font-weight: 800; color: #065f46; text-transform: uppercase; letter-spacing: 1px;\">✅ Compliance Review Completed</div>\n        <div style=\"font-size: 13px; font-weight: 600; color: #047857; margin-top: 2px;\">Your transaction has been approved and successfully released.</div>\n      </div>\n\n      <p style=\"font-size: 13px; color: #475569; line-height: 1.6; margin: 0 0 16px;\">\n        The previously held transfer of <strong style=\"color: #0f172a;\">PKR {{ ($json.body?.amount || $json.amount || 0).toLocaleString() }}</strong> was verified by Bank Compliance and released to the beneficiary.\n      </p>\n\n      <table width=\"100%\" style=\"font-size: 13px; border-collapse: collapse; margin-bottom: 20px;\">\n        <tr style=\"border-bottom: 1px solid #f1f5f9;\">\n          <td style=\"padding: 10px 0; color: #64748b;\">Amount Transferred</td>\n          <td align=\"right\" style=\"padding: 10px 0; font-weight: 800; color: #059669; font-family: monospace;\">PKR {{ ($json.body?.amount || $json.amount || 0).toLocaleString() }}</td>\n        </tr>\n        <tr style=\"border-bottom: 1px solid #f1f5f9;\">\n          <td style=\"padding: 10px 0; color: #64748b;\">Target Beneficiary</td>\n          <td align=\"right\" style=\"padding: 10px 0; font-weight: 700; color: #0f172a; font-family: monospace;\">{{ $json.body?.recipient_id || $json.recipient_id }}</td>\n        </tr>\n        <tr style=\"border-bottom: 1px solid #f1f5f9;\">\n          <td style=\"padding: 10px 0; color: #64748b;\">Settlement Status</td>\n          <td align=\"right\" style=\"padding: 10px 0; font-weight: 700; color: #059669;\">Settled on Raast</td>\n        </tr>\n      </table>\n\n      <p style=\"font-size: 12px; color: #64748b; line-height: 1.5; margin: 0;\">\n        Your available balance has been updated. Thank you for your patience during security verification.\n      </p>\n    </div>\n\n    <!-- Legal Bank Footer -->\n    <div style=\"padding: 16px 32px; background-color: #f8fafc; border-top: 1px solid #f1f5f9; text-align: center;\">\n      <p style=\"font-size: 10px; color: #94a3b8; margin: 0;\">State Bank of Pakistan · Raast Instant Fast Payment Rail</p>\n    </div>\n  </div>\n</div>"
+      },
+      "id": "node-approved-email",
+      "name": "Customer Approved Notice Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [1020, 340]
+    },
+    {
+      "parameters": {
+        "toEmail": "={{ $json.body?.to_email || $json.to_email }}",
+        "subject": "=Raast Payment Notice: Transfer Declined (PKR {{ ($json.body?.amount || $json.amount || 0).toLocaleString() }})",
+        "html": "=<div style=\"background-color: #f8fafc; padding: 40px 15px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1e293b;\">\n  <div style=\"max-width: 460px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05); overflow: hidden;\">\n    \n    <!-- Bank Header -->\n    <div style=\"padding: 24px 32px 20px; border-bottom: 1px solid #f1f5f9; text-align: left;\">\n      <div style=\"font-size: 11px; font-weight: 800; letter-spacing: 1.5px; color: #dc2626; text-transform: uppercase;\">STATE BANK RAAST · COMPLIANCE NOTICE</div>\n      <div style=\"font-size: 18px; font-weight: 800; color: #0f172a; margin-top: 4px;\">Transfer Declined</div>\n    </div>\n\n    <!-- Main Content -->\n    <div style=\"padding: 28px 32px; text-align: left;\">\n      <!-- Rose Status Callout -->\n      <div style=\"background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 12px; padding: 14px 18px; margin-bottom: 20px;\">\n        <div style=\"font-size: 11px; font-weight: 800; color: #991b1b; text-transform: uppercase; letter-spacing: 1px;\">✕ Compliance Review Decision</div>\n        <div style=\"font-size: 13px; font-weight: 600; color: #7f1d1d; margin-top: 2px;\">Your transaction was declined following security review.</div>\n      </div>\n\n      <p style=\"font-size: 13px; color: #475569; line-height: 1.6; margin: 0 0 16px;\">\n        Following evaluation by Bank Compliance, the payment request of <strong style=\"color: #0f172a;\">PKR {{ ($json.body?.amount || $json.amount || 0).toLocaleString() }}</strong> was declined to safeguard your account. <strong style=\"color: #0f172a;\">No funds were deducted from your account.</strong>\n      </p>\n\n      <table width=\"100%\" style=\"font-size: 13px; border-collapse: collapse; margin-bottom: 20px;\">\n        <tr style=\"border-bottom: 1px solid #f1f5f9;\">\n          <td style=\"padding: 10px 0; color: #64748b;\">Attempted Amount</td>\n          <td align=\"right\" style=\"padding: 10px 0; font-weight: 800; color: #dc2626; font-family: monospace;\">PKR {{ ($json.body?.amount || $json.amount || 0).toLocaleString() }}</td>\n        </tr>\n        <tr style=\"border-bottom: 1px solid #f1f5f9;\">\n          <td style=\"padding: 10px 0; color: #64748b;\">Target Beneficiary</td>\n          <td align=\"right\" style=\"padding: 10px 0; font-weight: 700; color: #0f172a; font-family: monospace;\">{{ $json.body?.recipient_id || $json.recipient_id }}</td>\n        </tr>\n        <tr style=\"border-bottom: 1px solid #f1f5f9;\">\n          <td style=\"padding: 10px 0; color: #64748b;\">Account Balance Impact</td>\n          <td align=\"right\" style=\"padding: 10px 0; font-weight: 700; color: #059669;\">PKR 0 (No deduction)</td>\n        </tr>\n      </table>\n\n      <p style=\"font-size: 12px; color: #64748b; line-height: 1.5; margin: 0;\">\n        If you recognize this transfer or believe this was an error, please contact Bank Customer Support at <strong>111-BANK</strong> for further assistance.\n      </p>\n    </div>\n\n    <!-- Legal Bank Footer -->\n    <div style=\"padding: 16px 32px; background-color: #f8fafc; border-top: 1px solid #f1f5f9; text-align: center;\">\n      <p style=\"font-size: 10px; color: #94a3b8; margin: 0;\">State Bank of Pakistan · Raast Fraud Protection Operations</p>\n    </div>\n  </div>\n</div>"
+      },
+      "id": "node-declined-email",
+      "name": "Customer Declined Notice Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [1220, 460]
+    },
+    {
+      "parameters": {
+        "toEmail": "={{ $json.body?.to_email || $json.to_email }}",
+        "subject": "=🚨 CRITICAL DHOKA ALERT: {{ $json.body?.decision || $json.decision }} (PKR {{ ($json.body?.amount || $json.amount || 0).toLocaleString() }})",
+        "html": "=<div style=\"background-color: #f8fafc; padding: 40px 15px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1e293b;\">\n  <div style=\"max-width: 520px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; border: 1px solid #fee2e2; box-shadow: 0 4px 16px rgba(220, 38, 38, 0.08); overflow: hidden;\">\n    \n    <!-- Header -->\n    <div style=\"background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%); padding: 22px 28px;\">\n      <span style=\"display: inline-block; background: rgba(255,255,255,0.2); color: #ffffff; font-size: 10px; font-weight: 800; letter-spacing: 2px; padding: 4px 10px; border-radius: 20px; text-transform: uppercase;\">SecOps Sentinel Alert</span>\n      <h1 style=\"margin: 8px 0 0; color: #ffffff; font-size: 20px; font-weight: 900;\">🚨 TRANSACTION {{ $json.body?.decision || $json.decision }}</h1>\n      <p style=\"margin: 4px 0 0; color: #fecaca; font-size: 12px;\">Dhoka Detector AI Risk Engine Interception</p>\n    </div>\n\n    <!-- Incident Details -->\n    <div style=\"padding: 24px 28px;\">\n      <div style=\"background-color: #fef2f2; border: 1px solid #fecaca; border-radius: 12px; padding: 14px 18px; margin-bottom: 20px;\">\n        <table width=\"100%\">\n          <tr>\n            <td>\n              <div style=\"font-size: 10px; font-weight: 800; color: #991b1b; text-transform: uppercase; letter-spacing: 1px;\">Threat Assessment</div>\n              <div style=\"font-size: 13px; font-weight: 800; color: #7f1d1d; margin-top: 2px;\">{{ $json.body?.reason || $json.reason }}</div>\n            </td>\n            <td align=\"right\" valign=\"top\">\n              <span style=\"background-color: #dc2626; color: #ffffff; font-size: 18px; font-weight: 900; padding: 4px 12px; border-radius: 8px; font-family: monospace;\">{{ $json.body?.risk_score || $json.risk_score }}/100</span>\n            </td>\n          </tr>\n        </table>\n      </div>\n\n      <table width=\"100%\" style=\"font-size: 13px; border-collapse: collapse; margin-bottom: 16px;\">\n        <tr style=\"border-bottom: 1px solid #f1f5f9;\">\n          <td style=\"padding: 8px 0; color: #64748b;\">Intercepted Amount</td>\n          <td align=\"right\" style=\"padding: 8px 0; font-weight: 800; color: #dc2626; font-family: monospace;\">PKR {{ ($json.body?.amount || $json.amount || 0).toLocaleString() }}</td>\n        </tr>\n        <tr style=\"border-bottom: 1px solid #f1f5f9;\">\n          <td style=\"padding: 8px 0; color: #64748b;\">Target Beneficiary</td>\n          <td align=\"right\" style=\"padding: 8px 0; font-weight: 700; color: #0f172a; font-family: monospace;\">{{ $json.body?.recipient_id || $json.recipient_id }}</td>\n        </tr>\n        <tr style=\"border-bottom: 1px solid #f1f5f9;\">\n          <td style=\"padding: 8px 0; color: #64748b;\">Audit Trail</td>\n          <td align=\"right\" style=\"padding: 8px 0; font-weight: 700; color: #059669; font-family: monospace;\">Block #{{ $json.body?.audit_block_index || $json.audit_block_index }} (SHA-256 Verified)</td>\n        </tr>\n      </table>\n\n      <p style=\"margin: 0; font-size: 11px; color: #94a3b8; line-height: 1.5;\">Funds have been held by security protocol. You can investigate and take compliance action in your Admin Dashboard.</p>\n    </div>\n  </div>\n</div>"
+      },
+      "id": "node-fraud-email",
+      "name": "Admin Fraud Alert Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [1220, 680]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Route: Is OTP?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route: Is OTP?": {
+      "main": [
+        [
+          {
+            "node": "Customer OTP Email (Clean)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Route: Is Hold?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route: Is Hold?": {
+      "main": [
+        [
+          {
+            "node": "Customer Hold Notice Email",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Route: Is Approved?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route: Is Approved?": {
+      "main": [
+        [
+          {
+            "node": "Customer Approved Notice Email",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Route: Is Declined?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route: Is Declined?": {
+      "main": [
+        [
+          {
+            "node": "Customer Declined Notice Email",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Admin Fraud Alert Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

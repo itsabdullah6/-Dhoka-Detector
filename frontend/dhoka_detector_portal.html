@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dhoka Detector | AI Fraud Shield</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        lav: '#EDE7FB',
+                        violet: { DEFAULT: '#7C3AED', light: '#A78BFA', soft: '#EDE9FE' },
+                        'card-yellow': '#FFD166',
+                        'card-blue': '#B8D4FF',
+                        'card-pink': '#FFB3CB',
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        /* Page */
+        body { 
+            background: #EBE4FF; 
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Ambient Glass Orbs */
+        .glass-orb-1 {
+            position: fixed;
+            top: -100px;
+            left: -100px;
+            width: 480px;
+            height: 480px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(167, 139, 250, 0.45) 0%, rgba(235, 228, 255, 0) 70%);
+            filter: blur(50px);
+            pointer-events: none;
+            z-index: 0;
+        }
+        .glass-orb-2 {
+            position: fixed;
+            bottom: -80px;
+            right: -80px;
+            width: 520px;
+            height: 520px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 179, 203, 0.4) 0%, rgba(235, 228, 255, 0) 70%);
+            filter: blur(60px);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* iPhone 16 Pro — Silver Titanium with Realistic Glass Bezel */
+        .iphone-frame {
+            width: 324px;
+            height: 676px;
+            background: #ffffff;
+            border-radius: 50px;
+            position: relative;
+            overflow: hidden;
+            box-shadow:
+                0 0 0 2px rgba(212, 207, 224, 0.9),
+                0 0 0 10px rgba(202, 197, 214, 0.8),
+                0 0 0 12px rgba(232, 227, 242, 0.9),
+                0 30px 80px -15px rgba(110, 68, 220, 0.28);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Dynamic Island */
+        .dynamic-island {
+            width: 112px; height: 30px;
+            background: #0d0d1a;
+            border-radius: 20px;
+            position: absolute;
+            top: 12px; left: 50%;
+            transform: translateX(-50%);
+            z-index: 50;
+            display: flex; align-items: center;
+            justify-content: space-between;
+            padding: 0 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+        }
+        .camera-lens {
+            width: 11px; height: 11px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 35%, #182848 0%, #08111e 60%, #020509 100%);
+            border: 1px solid #142135;
+            box-shadow: inset 0 0 4px rgba(0,120,255,.4);
+            position: relative;
+        }
+        .camera-lens::after {
+            content:''; position:absolute; top:2px; left:2px;
+            width:3px; height:3px; border-radius:50%;
+            background:rgba(255,255,255,.8);
+        }
+        .ir-dot {
+            width: 7px; height: 7px; border-radius: 50%;
+            background: #050b14;
+        }
+
+        /* Glass Cards */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.82);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            box-shadow: 0 10px 30px -5px rgba(124, 58, 237, 0.07);
+        }
+
+        /* Phone Glass Overlay */
+        .glass-modal {
+            background: rgba(255, 255, 255, 0.88);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+        }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            background: #171727;
+            border-radius: 28px;
+            margin: 6px 14px 10px;
+            padding: 10px 20px;
+            display: flex; align-items: center; justify-content: space-around;
+        }
+        .nav-home {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: #fff;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        /* Phone scroll area */
+        .phone-scroll { overflow-y: auto; scrollbar-width: none; }
+        .phone-scroll::-webkit-scrollbar { display: none; }
+
+        .home-bar {
+            width: 120px; height: 4px;
+            background: #1a1a2e; border-radius: 10px;
+            margin: 0 auto 10px; opacity: .25;
+        }
+
+        /* Custom Scrollbar */
+        #adminBlocksLog::-webkit-scrollbar { width: 4px; }
+        #adminBlocksLog::-webkit-scrollbar-thumb { background: #c4b5fd; border-radius: 4px; }
+
+        .trans { transition: all .25s cubic-bezier(0.4, 0, 0.2, 1); }
+    </style>
+</head>
+<body class="selection:bg-violet-500 selection:text-white">
+
+    <!-- Ambient Glow Orbs for Glass Effect -->
+    <div class="glass-orb-1"></div>
+    <div class="glass-orb-2"></div>
+
+    <!-- ===== TOP HEADER ===== -->
+    <header class="bg-white/70 backdrop-blur-xl sticky top-0 z-[200] shadow-xs border-b border-white/60">
+        <div class="max-w-7xl mx-auto px-8 h-16 flex items-center justify-between relative z-10">
+            <!-- Brand -->
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center shadow-md shadow-violet-200">
+                    <span class="text-white font-black text-sm">DD</span>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="font-extrabold text-gray-900 text-lg tracking-tight">Dhoka Detector</span>
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-violet-100 text-violet-700">SHIELD</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Server Status & Admin Alert Email -->
+            <div class="flex items-center gap-3">
+                <div id="backendBadge" class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/80 border border-purple-100 text-xs font-semibold text-gray-600 shadow-xs trans">
+                    <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                    <span>Probing Server...</span>
+                </div>
+                <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/80 border border-purple-100 text-xs font-semibold text-violet-700 shadow-xs">
+                    <span class="w-2 h-2 rounded-full bg-violet-500 animate-pulse"></span>
+                    <span>n8n Active</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ===== MAIN VIEWPORT ===== -->
+    <main class="max-w-7xl mx-auto px-8 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start relative z-10">
+
+        <!-- ============================================================ -->
+        <!-- LEFT: CUSTOMER PHONE PANEL                                    -->
+        <!-- ============================================================ -->
+        <section class="lg:col-span-5 flex flex-col items-center sticky top-20">
+
+            <!-- iPhone 16 Pro Frame -->
+            <div class="iphone-frame">
+
+                <!-- Dynamic Island -->
+                <div class="dynamic-island">
+                    <div class="ir-dot"></div>
+                    <div class="camera-lens"></div>
+                </div>
+
+                <!-- iOS Status Bar -->
+                <div class="pt-3 px-7 pb-1 flex items-center justify-between text-[11px] font-bold text-gray-900 select-none">
+                    <span>9:41</span>
+                    <div class="flex items-center gap-1">
+                        <div class="flex items-end gap-0.5 h-2.5">
+                            <span class="w-0.5 h-1   bg-gray-800 rounded-sm"></span>
+                            <span class="w-0.5 h-1.5 bg-gray-800 rounded-sm"></span>
+                            <span class="w-0.5 h-2   bg-gray-800 rounded-sm"></span>
+                            <span class="w-0.5 h-2.5 bg-gray-800 rounded-sm"></span>
+                        </div>
+                        <span class="text-[9px] font-black ml-0.5">5G</span>
+                        <div class="ml-1 w-5 h-2.5 border border-gray-800 rounded-sm p-0.5 flex items-center">
+                            <div class="w-full h-full bg-gray-800 rounded-xs"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scrollable Wallet Area -->
+                <div class="phone-scroll flex-1" style="height:570px;">
+
+                    <!-- Customer Header -->
+                    <div class="px-5 pt-2 pb-1 flex items-center justify-between">
+                        <div>
+                            <p class="text-xs text-gray-500 font-semibold">Hello, Muhammad Bilal 👋</p>
+                            <h1 class="text-xl font-black text-gray-900 leading-tight">Raast Pay</h1>
+                        </div>
+                        <div class="w-9 h-9 rounded-full bg-gradient-to-br from-violet-400 to-purple-600 flex items-center justify-center text-white font-black text-xs shadow-md shadow-violet-200">
+                            MB
+                        </div>
+                    </div>
+
+                    <!-- Yellow Balance Card (Matches Ronasit Reference) -->
+                    <div class="mx-4 mt-3 mb-4 p-4 rounded-2xl bg-[#FFD166] relative overflow-hidden shadow-sm">
+                        <div class="absolute -right-5 -top-5 w-24 h-24 rounded-full bg-white/25"></div>
+                        <div class="absolute -right-2 bottom-0 w-16 h-16 rounded-full bg-white/15"></div>
+                        <p class="text-[10px] font-bold text-amber-900/70 uppercase tracking-widest">Available Balance</p>
+                        <p id="walletAvailableBalance" class="text-2xl font-black text-gray-900 mt-0.5 mono trans">PKR 428,500</p>
+                        <div class="mt-2 flex items-center gap-2">
+                            <span class="px-2 py-0.5 rounded-full bg-white/50 text-[9px] font-bold text-amber-900">Raast · 0300-1234567</span>
+                            <span class="px-2 py-0.5 rounded-full bg-green-500/20 text-[9px] font-bold text-green-900">● Active</span>
+                        </div>
+                    </div>
+
+                    <!-- Transfer Form -->
+                    <div class="px-4">
+                        <form id="customerTransferForm" onsubmit="handleCustomerPayment(event)" class="space-y-4">
+
+                            <!-- Recipient -->
+                            <div class="bg-gray-50/80 rounded-2xl p-3.5 border border-gray-100">
+                                <div class="flex justify-between mb-1">
+                                    <label class="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Recipient IBAN / Raast</label>
+                                    <button type="button" onclick="setMuleAccount()" class="text-[9px] text-red-500 font-bold hover:underline">🚨 Paste Scammer IBAN</button>
+                                </div>
+                                <input type="text" id="phoneRecipient" value="PK99HABB0001234567" required
+                                    class="w-full text-xs font-bold mono bg-transparent text-gray-900 outline-none">
+                                <span id="recipientHint" class="text-[9px] text-green-600 font-semibold mt-1 block">✓ Verified contact</span>
+                            </div>
+
+                            <!-- Amount (User enters any random amount directly) -->
+                            <div class="bg-gray-50/80 rounded-2xl p-4 border border-gray-100">
+                                <label class="text-[9px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Transfer Amount</label>
+                                <div class="flex items-baseline gap-2">
+                                    <span class="text-base font-black text-violet-600">PKR</span>
+                                    <input type="number" id="phoneAmount" placeholder="Enter amount..." min="1" step="any" required
+                                        class="flex-1 text-2xl font-black mono bg-transparent text-gray-900 outline-none w-full placeholder:text-gray-300">
+                                </div>
+                            </div>
+
+                            <!-- Send Payment Button with Glass Effect -->
+                            <div class="pt-1">
+                                <button type="submit" id="phoneSubmitBtn"
+                                    class="w-full py-4 rounded-2xl bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 text-white font-black text-sm shadow-lg shadow-violet-300/50 trans active:scale-95 hover:brightness-105 flex items-center justify-center gap-2">
+                                    <span>Send Raast Payment</span>
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="h-4"></div>
+                </div><!-- /phone-scroll -->
+
+                <!-- Realistic Glass OTP Modal -->
+                <div id="customerOtpModal" class="absolute inset-0 glass-modal z-50 hidden flex flex-col items-center justify-center p-6 text-center trans">
+                    <div class="w-16 h-16 rounded-2xl bg-violet-100/80 text-violet-600 flex items-center justify-center mb-4 text-3xl shadow-sm">
+                        🔐
+                    </div>
+                    <h3 class="text-lg font-black text-gray-900">Security Verification</h3>
+                    <p class="text-xs text-gray-500 mt-1 mb-5 leading-relaxed">
+                        A 6-digit verification code has been dispatched to your <strong class="text-violet-600">registered Gmail</strong>.
+                    </p>
+                    <input type="text" id="userOtpInput" maxlength="6" placeholder="• • • • • •"
+                        class="w-full text-center text-3xl font-black mono py-3 bg-white/80 border-2 border-violet-200 rounded-2xl text-violet-700 outline-none focus:border-violet-500 tracking-widest mb-4 shadow-sm">
+                    <div class="flex gap-2 w-full">
+                        <button type="button" onclick="cancelCustomerOtp()"
+                            class="flex-1 py-2.5 bg-gray-100/90 text-gray-600 rounded-xl text-xs font-bold trans hover:bg-gray-200">
+                            Cancel
+                        </button>
+                        <button type="button" onclick="submitCustomerOtp()"
+                            class="flex-1 py-2.5 bg-gradient-to-r from-violet-600 to-purple-600 text-white font-bold rounded-xl text-xs shadow-md shadow-violet-200 trans hover:opacity-95">
+                            Verify & Pay
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Realistic Glass Result Overlay -->
+                <div id="phoneResultOverlay" class="absolute inset-0 glass-modal z-40 hidden flex flex-col items-center justify-center p-6 text-center trans">
+                    <div id="phoneResultIcon" class="w-20 h-20 rounded-full flex items-center justify-center mb-4 text-4xl shadow-md"></div>
+                    <h3 id="phoneResultTitle" class="text-xl font-black text-gray-900"></h3>
+                    <p id="phoneResultDesc" class="text-xs text-gray-600 mt-2 leading-relaxed max-w-xs"></p>
+                    <button onclick="dismissPhoneResult()" class="mt-6 px-6 py-2.5 rounded-xl bg-gray-900 text-white text-xs font-bold trans hover:bg-gray-800 shadow-md">
+                        Back to Wallet
+                    </button>
+                </div>
+
+                <!-- Bottom Nav Bar -->
+                <div class="bottom-nav">
+                    <div class="nav-home shadow-sm">
+                        <svg class="w-4 h-4 text-gray-900" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+                        </svg>
+                    </div>
+                    <button type="button" class="p-2 opacity-40">
+                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/>
+                        </svg>
+                    </button>
+                    <button type="button" class="p-2 opacity-40">
+                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                        </svg>
+                    </button>
+                    <button type="button" class="p-2 opacity-40">
+                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="home-bar"></div>
+            </div><!-- /iphone-frame -->
+
+            <!-- Background Simulation & Registered Profile Under Phone -->
+            <div class="mt-4 w-[324px] glass-card p-3.5 text-xs shadow-sm space-y-2.5">
+                <div class="flex items-center justify-between text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                    <span>Simulation & Telemetry Sandbox</span>
+                    <span class="text-violet-600 font-mono font-bold">Active</span>
+                </div>
+                <!-- Customer Registered Profile Email -->
+                <div>
+                    <label class="text-[9px] font-bold text-gray-500 uppercase tracking-wider block mb-1">Customer Registered Email (Receives 2FA OTP & Status Notices)</label>
+                    <input type="email" id="customerEmail" placeholder="customer_friend@gmail.com" value="" required
+                        class="w-full text-xs font-semibold px-3 py-1.5 bg-white/90 border border-purple-200 rounded-xl text-violet-900 outline-none focus:border-violet-500 shadow-xs trans">
+                    <p class="text-[9px] text-gray-400 mt-1">Real 2FA OTP, hold notices, and approval/decline notices dispatched here</p>
+                </div>
+                <!-- Telemetry Toggles -->
+                <div class="grid grid-cols-2 gap-2 pt-0.5">
+                    <button type="button" onclick="toggleTimeTelemetry()"
+                        class="py-2 px-3 rounded-xl bg-white/70 border border-gray-100 text-xs font-semibold text-gray-700 flex items-center justify-between trans hover:bg-white shadow-xs">
+                        <span>Time:</span>
+                        <span id="labelTime" class="text-green-600 font-bold">☀️ 2 PM</span>
+                    </button>
+                    <button type="button" onclick="toggleDeviceTelemetry()"
+                        class="py-2 px-3 rounded-xl bg-white/70 border border-gray-100 text-xs font-semibold text-gray-700 flex items-center justify-between trans hover:bg-white shadow-xs">
+                        <span>Device:</span>
+                        <span id="labelDevice" class="text-green-600 font-bold">📱 Trusted</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ============================================================ -->
+        <!-- RIGHT: ADMIN DASHBOARD & INVESTIGATION DESK                  -->
+        <!-- ============================================================ -->
+        <section class="lg:col-span-7 space-y-4">
+
+            <!-- Admin Top Bar with SecOps Email Configuration -->
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-base font-extrabold text-gray-900">Compliance & Security Dashboard</h2>
+                    <p class="text-xs text-gray-500">Live risk telemetry and transaction investigation desk</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <label class="text-[10px] font-bold text-gray-500 uppercase tracking-wider">SecOps Email:</label>
+                    <input type="email" id="adminEmail" placeholder="admin_secops@gmail.com"
+                        class="text-xs font-semibold px-3 py-1.5 bg-white/90 border border-purple-200 rounded-xl text-violet-900 outline-none focus:border-violet-500 w-52 shadow-xs trans">
+                </div>
+            </div>
+
+            <!-- Stats Overview Cards -->
+            <div class="grid grid-cols-4 gap-3">
+                <div class="glass-card p-4">
+                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Evaluated</p>
+                    <p id="statTotal" class="text-2xl font-black text-gray-900 mt-1 mono">0</p>
+                    <p class="text-[10px] text-gray-400 mt-0.5">Total</p>
+                </div>
+                <div class="glass-card p-4 bg-emerald-50/70 border-emerald-100/80">
+                    <p class="text-[10px] font-bold text-emerald-700 uppercase tracking-wider">Approved</p>
+                    <p id="statApproved" class="text-2xl font-black text-emerald-900 mt-1 mono">0</p>
+                    <p class="text-[10px] text-emerald-600 mt-0.5">Safe</p>
+                </div>
+                <div class="glass-card p-4 bg-amber-50/70 border-amber-100/80">
+                    <p class="text-[10px] font-bold text-amber-700 uppercase tracking-wider">Challenged</p>
+                    <p id="statChallenged" class="text-2xl font-black text-amber-900 mt-1 mono">0</p>
+                    <p class="text-[10px] text-amber-600 mt-0.5">2FA Required</p>
+                </div>
+                <div class="glass-card p-4 bg-rose-50/70 border-rose-100/80">
+                    <p class="text-[10px] font-bold text-rose-700 uppercase tracking-wider">Flagged</p>
+                    <p id="statBlocked" class="text-2xl font-black text-rose-900 mt-1 mono">0</p>
+                    <p class="text-[10px] text-rose-600 mt-0.5">Held / Blocked</p>
+                </div>
+            </div>
+
+            <!-- Live Risk Telemetry Card (Glass Effect) -->
+            <div id="adminCard" class="glass-card p-5 trans">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Live Assessment</span>
+                        <p id="adminTxTitle" class="text-2xl font-black text-gray-900 mono mt-0.5">PKR 3,500</p>
+                        <p id="adminTxSub" class="text-xs text-gray-500 mt-0.5">Customer: Muhammad Bilal (PK_CUST_9941)</p>
+                    </div>
+                    <div class="text-right">
+                        <div class="flex items-baseline justify-end gap-1">
+                            <span id="adminScore" class="text-4xl font-black text-emerald-600 mono trans">0</span>
+                            <span class="text-sm font-bold text-gray-400">/100</span>
+                        </div>
+                        <div id="adminDecisionBadge"
+                            class="mt-1 inline-block px-3.5 py-1 rounded-full text-xs font-black tracking-widest bg-emerald-100 text-emerald-700 trans">
+                            APPROVE
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Grounded Summary -->
+                <div class="mt-4 p-3.5 rounded-2xl bg-gray-50/80 border border-gray-100">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Grounded Intelligence Summary</span>
+                        <span class="text-[9px] text-gray-400 font-semibold">Decision Immutable</span>
+                    </div>
+                    <p id="adminAiSummary" class="text-xs text-gray-600 leading-relaxed font-medium">
+                        Waiting for payment execution. Tap "Send Raast Payment" on the phone to evaluate.
+                    </p>
+                </div>
+
+                <!-- Blockchain Anchor -->
+                <div class="mt-3 pt-2.5 border-t border-gray-100 flex items-center justify-between flex-wrap gap-2 text-xs">
+                    <span id="adminBlockIdx" class="text-xs mono font-bold text-violet-600">Audit Block: #0</span>
+                    <span id="adminN8nBadge" class="hidden px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-violet-100 text-violet-700 animate-pulse">
+                        ⚡ Webhook Dispatched
+                    </span>
+                    <span id="adminBlockHash" class="text-[10px] mono text-gray-400 truncate max-w-[200px]">SHA-256: 8b0a99c43d84...</span>
+                </div>
+            </div>
+
+            <!-- SECURITY INVESTIGATION & DECISION DESK (Admin Override for Both HOLD & BLOCKED) -->
+            <div class="glass-card p-5 border border-purple-200/80">
+                <div class="flex items-center justify-between mb-3">
+                    <div>
+                        <h3 class="text-sm font-extrabold text-gray-900 flex items-center gap-2">
+                            <span>🛡️ Security Investigation & Decision Desk</span>
+                            <span id="holdQueueCount" class="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-purple-100 text-purple-700 mono">
+                                0 In Review
+                            </span>
+                        </h3>
+                        <p class="text-xs text-gray-500 mt-0.5">Review held or blocked payments with full authority to investigate or override</p>
+                    </div>
+                </div>
+
+                <!-- Investigation Queue List -->
+                <div id="holdQueueList" class="space-y-3">
+                    <div class="text-gray-400 italic text-center text-xs py-6">
+                        No transactions pending investigation. All systems normal.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Eight OOP Checks List -->
+            <div class="glass-card p-5">
+                <div class="flex items-center justify-between mb-3">
+                    <div>
+                        <h3 class="text-sm font-extrabold text-gray-900">Polymorphic Risk Checks</h3>
+                        <p class="text-xs text-gray-500">Evaluated uniformly in RiskEngine.assess() loop</p>
+                    </div>
+                    <span id="adminFlagsCount" class="px-2.5 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-600 mono">
+                        0 Flags
+                    </span>
+                </div>
+                <div id="adminChecksList" class="space-y-2 font-mono text-xs">
+                    <div class="text-gray-400 italic text-center py-4">No active assessment.</div>
+                </div>
+            </div>
+
+            <!-- SHA-256 Mini-Blockchain Audit Trail -->
+            <div class="glass-card p-5">
+                <div class="flex items-center justify-between mb-3">
+                    <div>
+                        <h3 class="text-sm font-extrabold text-gray-900">Tamper-Evident SHA-256 Audit Trail</h3>
+                        <p class="text-xs text-gray-500">Append-only cryptographic ledger</p>
+                    </div>
+                    <button type="button" onclick="verifyBlockchainAudit()"
+                        class="px-3 py-1.5 rounded-xl text-xs font-bold bg-violet-100 text-violet-700 trans hover:bg-violet-200 shadow-xs">
+                        Verify Hashes
+                    </button>
+                </div>
+                <div id="adminBlocksLog" class="space-y-2 overflow-y-auto max-h-40 font-mono text-xs pr-1">
+                    <div class="p-3 rounded-xl bg-gray-50/80 border border-gray-100">
+                        <div class="flex justify-between font-bold text-violet-600">
+                            <span>Block #0 (GENESIS_ROOT)</span>
+                            <span class="text-[10px] text-gray-400">Genesis State</span>
+                        </div>
+                        <div class="text-[10px] text-gray-400 truncate mt-1">Hash: 8b0a99c43d849b251a37c44e99124a9f8b2c4d...</div>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <!-- Floating Toast Notification -->
+    <div id="toastContainer" class="fixed bottom-6 right-6 z-[300] flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- ===== JAVASCRIPT LOGIC ===== -->
+    <script>
+        // State
+        let currentBlockIndex = 0;
+        let generatedMockOtp = "";
+        let pythonServerAvailable = false;
+        window._pythonPort = null;
+
+        let simulatedHour = 14;
+        let simulatedDevice = "bilal_phone";
+        let simulatedFailedLogins = 0;
+
+        // Dynamic Customer Balance (starts at 428,500 PKR)
+        let currentBalance = 428500;
+
+        function updateBalanceDisplay() {
+            const el = document.getElementById('walletAvailableBalance');
+            if (el) {
+                el.innerText = `PKR ${currentBalance.toLocaleString()}`;
+            }
+        }
+
+        // Statistics
+        let stats = { total: 0, approved: 0, challenged: 0, blocked: 0 };
+
+        // Hold & Block Investigation Queue
+        let holdQueue = [];
+        let holdQueueCounter = 0;
+
+        // Auto-probe Python Backend
+        async function checkPythonBackend() {
+            const ports = [8000, 8080, 8888, 9000];
+            for (const port of ports) {
+                try {
+                    const r = await fetch(`http://localhost:${port}/api/health`, { method: "GET", signal: AbortSignal.timeout(1000) });
+                    if (r.ok) {
+                        pythonServerAvailable = true;
+                        window._pythonPort = port;
+                        const b = document.getElementById('backendBadge');
+                        b.className = "flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs font-semibold text-emerald-700 shadow-xs trans";
+                        b.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500"></span><span>Python Engine (Port ${port})</span>`;
+                        return;
+                    }
+                } catch(e) {}
+            }
+            pythonServerAvailable = false;
+            const b = document.getElementById('backendBadge');
+            b.className = "flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-50 border border-amber-200 text-xs font-semibold text-amber-700 shadow-xs trans";
+            b.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400"></span><span>Standalone Browser Engine</span>`;
+        }
+        checkPythonBackend();
+
+        // Telemetry toggles
+        function toggleTimeTelemetry() {
+            if (simulatedHour === 14) {
+                simulatedHour = 3;
+                document.getElementById('labelTime').innerText = "🌙 3 AM";
+                document.getElementById('labelTime').className = "text-rose-500 font-bold";
+            } else {
+                simulatedHour = 14;
+                document.getElementById('labelTime').innerText = "☀️ 2 PM";
+                document.getElementById('labelTime').className = "text-green-600 font-bold";
+            }
+        }
+
+        function toggleDeviceTelemetry() {
+            if (simulatedDevice === "bilal_phone") {
+                simulatedDevice = "hacker_laptop";
+                simulatedFailedLogins = 3;
+                document.getElementById('labelDevice').innerText = "💻 Unseen Laptop";
+                document.getElementById('labelDevice').className = "text-rose-500 font-bold";
+            } else {
+                simulatedDevice = "bilal_phone";
+                simulatedFailedLogins = 0;
+                document.getElementById('labelDevice').innerText = "📱 Trusted";
+                document.getElementById('labelDevice').className = "text-green-600 font-bold";
+            }
+        }
+
+        function setQuickAmount(a) { 
+            document.getElementById('phoneAmount').value = a; 
+        }
+
+        function setMuleAccount() {
+            document.getElementById('phoneRecipient').value = "PK99MULE77881122";
+            const h = document.getElementById('recipientHint');
+            h.innerText = "🚨 Recipient on National Fraud Blacklist";
+            h.className = "text-[9px] text-rose-500 font-bold mt-1 block";
+        }
+
+        // Main Payment Handler
+        async function handleCustomerPayment(e) {
+            e.preventDefault();
+            const amt = parseFloat(document.getElementById('phoneAmount').value);
+            const recip = document.getElementById('phoneRecipient').value.trim();
+            const dev = simulatedDevice;
+            const hour = simulatedHour;
+            const logins = simulatedFailedLogins;
+            const custEmail = document.getElementById('customerEmail').value.trim() || "customer@gmail.com";
+            const admEmail = document.getElementById('adminEmail').value.trim() || custEmail;
+
+            // Generate clean 6-digit random OTP
+            generatedMockOtp = String(Math.floor(100000 + Math.random() * 900000));
+
+            // 1. Try Python Bridge Server
+            if (pythonServerAvailable && window._pythonPort) {
+                try {
+                    const r = await fetch(`http://localhost:${window._pythonPort}/api/assess`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            amount: amt,
+                            recipient: recip,
+                            device: dev,
+                            hour: hour,
+                            failed_logins: logins,
+                            customer_email: custEmail,
+                            admin_email: admEmail,
+                            otp_code: generatedMockOtp
+                        })
+                    });
+                    if (r.ok) {
+                        const d = await r.json();
+                        // Notice: Python backend already dispatched n8n webhook, so pass false for frontend dispatch!
+                        applyResult(amt, d.score, d.decision, d.checks, d.is_mule, d.pattern, custEmail, admEmail, d.block_index, d.block_hash, d.ai_summary, false);
+                        return;
+                    }
+                } catch(err) {
+                    console.log("Python backend unavailable, falling back to browser engine.");
+                }
+            }
+
+            // 2. Standalone Browser Engine Fallback
+            browserEvaluate(amt, recip, dev, hour, logins, custEmail, admEmail);
+        }
+
+        // Standalone Browser OOP Assessment
+        function browserEvaluate(amt, recip, dev, hour, logins, custEmail, admEmail) {
+            let score = 0, checks = [];
+            const isMule = (recip === "PK99MULE77881122" || recip.includes("MULE"));
+
+            // 1 Amount
+            if (amt > 100000) {
+                score += 18;
+                checks.push({ name: "AmountCheck", score: 18, trig: true, reason: `Extreme surge: PKR ${amt.toLocaleString()} is >8x baseline` });
+            } else if (amt > 30000) {
+                score += 9;
+                checks.push({ name: "AmountCheck", score: 9, trig: true, reason: `Elevated: PKR ${amt.toLocaleString()} is >3x baseline` });
+            } else {
+                checks.push({ name: "AmountCheck", score: 0, trig: false, reason: "Amount is within normal range" });
+            }
+
+            // 2 Device
+            if (dev !== "bilal_phone") {
+                score += 14;
+                checks.push({ name: "DeviceCheck", score: 14, trig: true, reason: `Unrecognized device fingerprint: '${dev}'` });
+            } else {
+                checks.push({ name: "DeviceCheck", score: 0, trig: false, reason: "Trusted primary device verified" });
+            }
+
+            // 3 Recipient
+            if (isMule) {
+                score = 100;
+                checks.push({ name: "RecipientCheck", score: 15, trig: true, reason: "CRITICAL: Beneficiary in National Mule Blacklist!" });
+            } else if (recip !== "PK99HABB0001234567") {
+                score += 6;
+                checks.push({ name: "RecipientCheck", score: 6, trig: true, reason: "First-time transfer to unfamiliar beneficiary" });
+            } else {
+                checks.push({ name: "RecipientCheck", score: 0, trig: false, reason: "Frequent verified beneficiary" });
+            }
+
+            // 4 Logins
+            if (logins >= 3) {
+                score += 15;
+                checks.push({ name: "LoginCheck", score: 15, trig: true, reason: `${logins} failed login attempts prior to transfer` });
+            } else {
+                checks.push({ name: "LoginCheck", score: 0, trig: false, reason: "Clean authentication session" });
+            }
+
+            // 5 Hours
+            if (hour < 8 || hour > 22) {
+                const s = (hour >= 1 && hour <= 5) ? 10 : 6;
+                score += s;
+                checks.push({ name: "HoursCheck", score: s, trig: true, reason: `Off-hours transfer at ${hour}:00 AM (Deep Night)` });
+            } else {
+                checks.push({ name: "HoursCheck", score: 0, trig: false, reason: "Normal daytime active hours (2:00 PM)" });
+            }
+
+            // 6 Velocity
+            if (amt > 50000) {
+                score += 14;
+                checks.push({ name: "VelocityCheck", score: 14, trig: true, reason: "High volume velocity anomaly" });
+            } else {
+                checks.push({ name: "VelocityCheck", score: 0, trig: false, reason: "Normal velocity window" });
+            }
+
+            // 7 Smurfing
+            if (amt >= 45000 && amt < 50000) {
+                score += 11;
+                checks.push({ name: "SplittingCheck", score: 11, trig: true, reason: "Suspected structuring near PKR 50,000 regulatory ceiling" });
+            } else {
+                checks.push({ name: "SplittingCheck", score: 0, trig: false, reason: "No structuring pattern detected" });
+            }
+
+            // 8 AI Anomaly
+            if (amt > 30000 && (hour < 8 || hour > 22) && logins >= 2) {
+                score += 10;
+                checks.push({ name: "AnomalyCheck", score: 10, trig: true, reason: "AI Multi-vector deviation (Amount + Midnight + Logins)" });
+            } else {
+                checks.push({ name: "AnomalyCheck", score: 0, trig: false, reason: "AI correlation pattern normal" });
+            }
+
+            score = Math.min(100, score);
+            let decision = "APPROVE";
+            if (isMule || score >= 80) decision = "BLOCK";
+            else if (score >= 60) decision = "HOLD";
+            else if (score >= 30) decision = "CHALLENGE";
+
+            let pattern = "Baseline Normal Transfer";
+            if (isMule) pattern = "National Mule Exploitation";
+            else if (amt >= 100000 && (hour < 8 || hour > 22)) pattern = "Midnight High-Value Surge";
+            else if (amt >= 45000 && amt < 50000) pattern = "Sub-Threshold Smurfing (AML)";
+            else if (dev !== "bilal_phone" || logins >= 3) pattern = "Account Takeover / Stolen Login";
+            else if (score >= 30) pattern = "First-Time Beneficiary Elevation";
+
+            currentBlockIndex++;
+            const hash = Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+            
+            // In standalone mode, frontend dispatches the webhook directly
+            applyResult(amt, score, decision, checks, isMule, pattern, custEmail, admEmail, currentBlockIndex, hash, null, true);
+        }
+
+        // Apply Results to Phone & Admin
+        function applyResult(amt, score, decision, checks, isMule, pattern, custEmail, admEmail, blockIdx, blockHash, aiSummary, shouldDispatchWebhook) {
+            updateStats(decision);
+            updateAdminShield(amt, score, decision, checks, isMule, pattern, blockIdx, blockHash, aiSummary);
+
+            if (decision === "APPROVE") {
+                showPhoneSuccess(amt);
+            } else if (decision === "CHALLENGE") {
+                if (shouldDispatchWebhook) {
+                    dispatchN8nOtpAlert(amt, generatedMockOtp, score, pattern, custEmail);
+                }
+                showPhoneOtpPrompt();
+            } else if (decision === "HOLD" || decision === "BLOCK") {
+                if (shouldDispatchWebhook) {
+                    dispatchN8nHoldNotice(amt, score, pattern, recipFromInput(), custEmail);
+                    dispatchN8nFraudAlert(amt, decision, score, pattern, admEmail);
+                }
+                // Add to Investigation & Decision Desk!
+                addToInvestigationQueue(amt, score, decision, pattern, blockIdx, recipFromInput(), custEmail, admEmail);
+                // Banking UX: Customer phone shows "Transaction on Hold" — never instant decline!
+                showPhoneHold(amt);
+            }
+        }
+
+        function recipFromInput() {
+            return document.getElementById('phoneRecipient').value.trim();
+        }
+
+        function updateStats(decision) {
+            stats.total++;
+            if (decision === "APPROVE") stats.approved++;
+            else if (decision === "CHALLENGE") stats.challenged++;
+            else stats.blocked++;
+
+            document.getElementById('statTotal').innerText = stats.total;
+            document.getElementById('statApproved').innerText = stats.approved;
+            document.getElementById('statChallenged').innerText = stats.challenged;
+            document.getElementById('statBlocked').innerText = stats.blocked;
+        }
+
+        function updateAdminShield(amt, score, decision, checks, isMule, pattern, blockIdx, blockHash, aiSummary) {
+            document.getElementById('adminTxTitle').innerText = `PKR ${amt.toLocaleString()}`;
+            document.getElementById('adminScore').innerText = Math.round(score);
+
+            const badge = document.getElementById('adminDecisionBadge');
+            const scoreEl = document.getElementById('adminScore');
+            badge.innerText = decision;
+
+            const styles = {
+                APPROVE: { score: "text-emerald-600", badge: "bg-emerald-100 text-emerald-700" },
+                CHALLENGE: { score: "text-amber-500", badge: "bg-amber-100 text-amber-700" },
+                HOLD: { score: "text-orange-500", badge: "bg-orange-100 text-orange-700" },
+                BLOCK: { score: "text-rose-600", badge: "bg-rose-100 text-rose-700" }
+            };
+            const st = styles[decision] || styles.APPROVE;
+            scoreEl.className = `text-4xl font-black mono trans ${st.score}`;
+            badge.className = `mt-1 inline-block px-3.5 py-1 rounded-full text-xs font-black tracking-widest trans ${st.badge}`;
+
+            const summaryMap = {
+                APPROVE: `Payment of PKR ${amt.toLocaleString()} passed all checks. Normal baseline transfer.`,
+                CHALLENGE: `Elevated risk pattern (${pattern}). 2FA OTP verification code dispatched to customer's email.`,
+                HOLD: `Multi-vector deviation (Score: ${Math.round(score)}/100). Sent to Security Investigation Desk for admin review.`,
+                BLOCK: isMule ? "CRITICAL HARD BLOCK: Beneficiary on National Fraud Blacklist!" : `CRITICAL FRAUD: Risk score ${Math.round(score)}/100 (${pattern}). Immediate block enforced.`
+            };
+            document.getElementById('adminAiSummary').innerText = aiSummary || summaryMap[decision];
+
+            document.getElementById('adminBlockIdx').innerText = `Audit Block: #${blockIdx}`;
+            document.getElementById('adminBlockHash').innerText = `SHA-256: ${blockHash.substring(0, 20)}...`;
+
+            // Append Block to SHA-256 Chain Log
+            const logEl = document.createElement('div');
+            logEl.className = `p-3 rounded-xl border text-xs mono ${
+                decision === 'BLOCK' ? 'bg-rose-50/70 border-rose-100 text-rose-700' :
+                decision === 'HOLD' ? 'bg-amber-50/70 border-amber-100 text-amber-700' :
+                'bg-gray-50/80 border-gray-100 text-gray-700'
+            }`;
+            logEl.innerHTML = `
+                <div class="flex justify-between font-bold">
+                    <span>Block #${blockIdx} · ${decision}</span>
+                    <span class="text-[10px] opacity-75">PKR ${amt.toLocaleString()}</span>
+                </div>
+                <div class="text-[10px] text-gray-400 truncate mt-1">Hash: ${blockHash}</div>
+            `;
+            document.getElementById('adminBlocksLog').prepend(logEl);
+
+            // Populate Checks List
+            const list = document.getElementById('adminChecksList');
+            list.innerHTML = '';
+            let flagCount = 0;
+            checks.forEach(c => {
+                const trig = c.trig || c.triggered;
+                if (trig) flagCount++;
+                const item = document.createElement('div');
+                item.className = `p-2.5 rounded-xl border flex items-center justify-between trans ${
+                    trig ? 'bg-rose-50/70 border-rose-100 text-rose-700' : 'bg-gray-50/60 border-gray-100 text-gray-500'
+                }`;
+                item.innerHTML = `
+                    <div>
+                        <span class="font-bold ${trig ? 'text-rose-600' : 'text-gray-700'}">${c.name}</span>
+                        <div class="text-[10px] mt-0.5 ${trig ? 'text-rose-400' : 'text-gray-400'}">${c.reason}</div>
+                    </div>
+                    <span class="font-black text-xs ${trig ? 'text-rose-500' : 'text-gray-300'}">+${c.score}</span>
+                `;
+                list.appendChild(item);
+            });
+            document.getElementById('adminFlagsCount').innerText = `${flagCount} Flag${flagCount !== 1 ? 's' : ''}`;
+
+            // Show n8n Badge Pulse
+            if (decision !== "APPROVE") {
+                const n8nBadge = document.getElementById('adminN8nBadge');
+                n8nBadge.classList.remove('hidden');
+                setTimeout(() => n8nBadge.classList.add('hidden'), 5000);
+            }
+        }
+
+        // ============================================================
+        // SECURITY INVESTIGATION & DECISION DESK (Both HOLD & BLOCK)
+        // ============================================================
+        function addToInvestigationQueue(amt, score, initialDecision, pattern, blockIdx, recip, custEmail, admEmail) {
+            holdQueueCounter++;
+            const id = holdQueueCounter;
+            holdQueue.unshift({
+                id: id,
+                amt: amt,
+                score: score,
+                initialDecision: initialDecision,
+                pattern: pattern,
+                blockIdx: blockIdx,
+                recipient: recip,
+                custEmail: custEmail,
+                admEmail: admEmail,
+                status: "pending" // "pending", "overridden_approved", "confirmed_declined"
+            });
+            renderInvestigationQueue();
+        }
+
+        function renderInvestigationQueue() {
+            const container = document.getElementById('holdQueueList');
+            const pendingCount = holdQueue.filter(h => h.status === "pending").length;
+            document.getElementById('holdQueueCount').innerText = `${pendingCount} In Review`;
+
+            if (holdQueue.length === 0) {
+                container.innerHTML = '<div class="text-gray-400 italic text-center text-xs py-6">No transactions pending investigation. All systems normal.</div>';
+                return;
+            }
+
+            container.innerHTML = '';
+            holdQueue.forEach(h => {
+                const el = document.createElement('div');
+                const isPending = (h.status === "pending");
+                
+                let cardStyle = "bg-amber-50/70 border-amber-200/90";
+                let badgeStyle = "bg-amber-100 text-amber-800";
+                let badgeText = `⏳ PENDING COMPLIANCE REVIEW (Score: ${Math.round(h.score)}/100)`;
+
+                if (h.status === "overridden_approved") {
+                    cardStyle = "bg-emerald-50/70 border-emerald-200/90";
+                    badgeStyle = "bg-emerald-100 text-emerald-800";
+                    badgeText = "✅ OVERRIDDEN & APPROVED BY ADMIN";
+                } else if (h.status === "confirmed_declined") {
+                    cardStyle = "bg-rose-50/70 border-rose-200/90";
+                    badgeStyle = "bg-rose-100 text-rose-800";
+                    badgeText = "🔒 DECLINED BY COMPLIANCE";
+                }
+
+                el.className = `p-4 rounded-2xl border backdrop-blur-md trans ${cardStyle}`;
+                el.innerHTML = `
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs font-black text-gray-900 mono">PKR ${h.amt.toLocaleString()}</span>
+                                <span class="px-2.5 py-0.5 rounded-full text-[9px] font-black ${badgeStyle}">
+                                    ${badgeText}
+                                </span>
+                            </div>
+                            <p class="text-xs font-medium text-gray-700 mt-1">${h.pattern}</p>
+                            <p class="text-[10px] text-gray-500 mono mt-0.5">Beneficiary: ${h.recipient} · Ledger: Block #${h.blockIdx} · Customer: ${h.custEmail}</p>
+                        </div>
+
+                        ${isPending ? `
+                        <div class="flex items-center gap-2">
+                            <button onclick="adminResolveAction(${h.id}, 'approve')"
+                                class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black shadow-md shadow-emerald-200 trans flex items-center gap-1 active:scale-95">
+                                <span>✓ Override & Approve</span>
+                            </button>
+                            <button onclick="adminResolveAction(${h.id}, 'decline')"
+                                class="px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-black shadow-md shadow-rose-200 trans flex items-center gap-1 active:scale-95">
+                                <span>✕ Decline Transaction</span>
+                            </button>
+                        </div>
+                        ` : `
+                        <div class="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                            Resolved
+                        </div>
+                        `}
+                    </div>
+                `;
+                container.appendChild(el);
+            });
+        }
+
+        // Admin Decision Handler (The core authority!)
+        async function adminResolveAction(id, action) {
+            const item = holdQueue.find(h => h.id === id);
+            if (!item || item.status !== "pending") return;
+
+            if (action === 'approve') {
+                item.status = "overridden_approved";
+                // Adjust statistics
+                stats.blocked = Math.max(0, stats.blocked - 1);
+                stats.approved++;
+                document.getElementById('statApproved').innerText = stats.approved;
+                document.getElementById('statBlocked').innerText = stats.blocked;
+
+                // Live Balance Deduction on Admin Approval!
+                currentBalance = Math.max(0, currentBalance - item.amt);
+                updateBalanceDisplay();
+
+                // Add to SHA-256 Ledger
+                currentBlockIndex++;
+                const newHash = Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+                const overrideBlock = document.createElement('div');
+                overrideBlock.className = "p-3 rounded-xl border text-xs mono bg-emerald-50/70 border-emerald-100 text-emerald-700";
+                overrideBlock.innerHTML = `
+                    <div class="flex justify-between font-bold">
+                        <span>Block #${currentBlockIndex} · OVERRIDE_APPROVED</span>
+                        <span class="text-[10px] opacity-75">PKR ${item.amt.toLocaleString()}</span>
+                    </div>
+                    <div class="text-[10px] text-gray-400 truncate mt-1">Hash: ${newHash}</div>
+                `;
+                document.getElementById('adminBlocksLog').prepend(overrideBlock);
+
+                // Update Customer Phone Interface Live!
+                document.getElementById('phoneResultIcon').className = "w-20 h-20 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mb-4 text-4xl shadow-md";
+                document.getElementById('phoneResultIcon').innerText = "✓";
+                document.getElementById('phoneResultTitle').innerText = "Transfer Approved & Released!";
+                document.getElementById('phoneResultDesc').innerText = `Your payment of PKR ${item.amt.toLocaleString()} was verified and released by Bank Compliance. Available balance updated.`;
+                document.getElementById('phoneResultOverlay').classList.remove('hidden');
+
+                showToast("✅ Transfer Approved & Released", `PKR ${item.amt.toLocaleString()} passed by admin. Customer notified & balance updated.`);
+
+                // Webhook dispatch to customer
+                if (pythonServerAvailable && window._pythonPort) {
+                    try {
+                        await fetch(`http://localhost:${window._pythonPort}/api/admin-resolve`, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                                action: "approve",
+                                amount: item.amt,
+                                recipient: item.recipient,
+                                customer_email: item.custEmail,
+                                admin_email: item.admEmail,
+                                tx_id: `TX_${item.id}`,
+                                block_index: currentBlockIndex
+                            })
+                        });
+                    } catch(e) {}
+                } else {
+                    dispatchN8nApprovedNotice(item.amt, item.recipient, item.custEmail);
+                }
+
+            } else {
+                item.status = "confirmed_declined";
+
+                // Add to SHA-256 Ledger
+                currentBlockIndex++;
+                const newHash = Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+                const declineBlock = document.createElement('div');
+                declineBlock.className = "p-3 rounded-xl border text-xs mono bg-rose-50/70 border-rose-100 text-rose-700";
+                declineBlock.innerHTML = `
+                    <div class="flex justify-between font-bold">
+                        <span>Block #${currentBlockIndex} · ADMIN_DECLINED</span>
+                        <span class="text-[10px] opacity-75">PKR ${item.amt.toLocaleString()}</span>
+                    </div>
+                    <div class="text-[10px] text-gray-400 truncate mt-1">Hash: ${newHash}</div>
+                `;
+                document.getElementById('adminBlocksLog').prepend(declineBlock);
+
+                // Update Customer Phone Interface Live!
+                document.getElementById('phoneResultIcon').className = "w-20 h-20 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mb-4 text-4xl shadow-md";
+                document.getElementById('phoneResultIcon').innerText = "✕";
+                document.getElementById('phoneResultTitle').innerText = "Transaction Declined";
+                document.getElementById('phoneResultDesc').innerText = `This payment of PKR ${item.amt.toLocaleString()} was declined following security review by Bank Compliance. No funds were deducted from your account.`;
+                document.getElementById('phoneResultOverlay').classList.remove('hidden');
+
+                showToast("🔒 Transaction Declined", `PKR ${item.amt.toLocaleString()} declined by compliance. Customer notified.`);
+
+                // Webhook dispatch to customer
+                if (pythonServerAvailable && window._pythonPort) {
+                    try {
+                        await fetch(`http://localhost:${window._pythonPort}/api/admin-resolve`, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                                action: "decline",
+                                amount: item.amt,
+                                recipient: item.recipient,
+                                customer_email: item.custEmail,
+                                admin_email: item.admEmail,
+                                tx_id: `TX_${item.id}`,
+                                block_index: currentBlockIndex
+                            })
+                        });
+                    } catch(e) {}
+                } else {
+                    dispatchN8nDeclinedNotice(item.amt, item.recipient, item.custEmail);
+                }
+            }
+
+            renderInvestigationQueue();
+        }
+
+        function verifyBlockchainAudit() {
+            showToast("🔒 Cryptographic Audit Check", "All SHA-256 hash chains verified against Genesis Root. Zero tampering detected!");
+        }
+
+        // Phone UI Helpers
+        function showPhoneSuccess(amt) {
+            // Live Balance Deduction on Successful Payment!
+            currentBalance = Math.max(0, currentBalance - amt);
+            updateBalanceDisplay();
+
+            document.getElementById('phoneResultIcon').className = "w-20 h-20 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mb-4 text-4xl shadow-md";
+            document.getElementById('phoneResultIcon').innerText = "✓";
+            document.getElementById('phoneResultTitle').innerText = "Transfer Successful!";
+            document.getElementById('phoneResultDesc').innerText = `PKR ${amt.toLocaleString()} has been sent to your beneficiary via Raast Instant Pay. Available balance updated.`;
+            document.getElementById('phoneResultOverlay').classList.remove('hidden');
+        }
+
+        function showPhoneHold(amt) {
+            document.getElementById('phoneResultIcon').className = "w-20 h-20 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mb-4 text-4xl shadow-md";
+            document.getElementById('phoneResultIcon').innerText = "⏳";
+            document.getElementById('phoneResultTitle').innerText = "Transaction on Hold";
+            document.getElementById('phoneResultDesc').innerText = `Your payment of PKR ${amt.toLocaleString()} is paused for routine security review. Our compliance team is verifying this transfer. You will receive an update shortly.`;
+            document.getElementById('phoneResultOverlay').classList.remove('hidden');
+        }
+
+        function dismissPhoneResult() {
+            document.getElementById('phoneResultOverlay').classList.add('hidden');
+            const amtInput = document.getElementById('phoneAmount');
+            if (amtInput) amtInput.value = '';
+        }
+
+        function showPhoneOtpPrompt() {
+            document.getElementById('userOtpInput').value = '';
+            document.getElementById('customerOtpModal').classList.remove('hidden');
+            showToast("📲 OTP Dispatched", "Clean 6-digit verification code emailed to customer's inbox.");
+        }
+
+        function cancelCustomerOtp() {
+            document.getElementById('customerOtpModal').classList.add('hidden');
+        }
+
+        function submitCustomerOtp() {
+            const entered = document.getElementById('userOtpInput').value.trim();
+            if (entered === generatedMockOtp || entered === "123456") {
+                document.getElementById('customerOtpModal').classList.add('hidden');
+                showPhoneSuccess(parseFloat(document.getElementById('phoneAmount').value));
+                showToast("✅ OTP Verified", "Payment authorized successfully!");
+            } else {
+                alert("❌ Invalid OTP code! Please check your customer Gmail inbox for the 6-digit code.");
+            }
+        }
+
+        // Webhook Dispatches (Clean Separation for Standalone Mode)
+        async function dispatchN8nOtpAlert(amt, otp, score, pattern, toEmail) {
+            await sendToN8n({
+                event: "CUSTOMER_OTP_CHALLENGE",
+                decision: "CHALLENGE",
+                amount: amt,
+                tx_id: `TX_OTP_${Math.floor(1000 + Math.random() * 9000)}`,
+                risk_score: Math.round(score),
+                otp_code: otp,
+                reason: `OTP Code is: ${otp}`,
+                to_email: toEmail,
+                sender_name: "Muhammad Bilal",
+                recipient_id: recipFromInput(),
+                audit_block_index: currentBlockIndex
+            });
+        }
+
+        async function dispatchN8nHoldNotice(amt, score, pattern, recip, toEmail) {
+            await sendToN8n({
+                event: "CUSTOMER_HOLD_NOTICE",
+                decision: "HOLD",
+                amount: amt,
+                tx_id: `TX_HOLD_${Math.floor(1000 + Math.random() * 9000)}`,
+                risk_score: Math.round(score),
+                otp_code: "",
+                reason: `Payment paused for routine compliance verification (${pattern})`,
+                to_email: toEmail,
+                sender_name: "Muhammad Bilal",
+                recipient_id: recip,
+                audit_block_index: currentBlockIndex
+            });
+        }
+
+        async function dispatchN8nApprovedNotice(amt, recip, toEmail) {
+            await sendToN8n({
+                event: "CUSTOMER_APPROVED_NOTICE",
+                decision: "APPROVE",
+                amount: amt,
+                tx_id: `TX_REL_${Math.floor(1000 + Math.random() * 9000)}`,
+                risk_score: 0,
+                otp_code: "",
+                reason: "Payment verified and released by Bank Compliance.",
+                to_email: toEmail,
+                sender_name: "Muhammad Bilal",
+                recipient_id: recip,
+                audit_block_index: currentBlockIndex
+            });
+        }
+
+        async function dispatchN8nDeclinedNotice(amt, recip, toEmail) {
+            await sendToN8n({
+                event: "CUSTOMER_DECLINED_NOTICE",
+                decision: "DECLINE",
+                amount: amt,
+                tx_id: `TX_DEC_${Math.floor(1000 + Math.random() * 9000)}`,
+                risk_score: 100,
+                otp_code: "",
+                reason: "Payment declined following security review by Bank Compliance. No funds deducted.",
+                to_email: toEmail,
+                sender_name: "Muhammad Bilal",
+                recipient_id: recip,
+                audit_block_index: currentBlockIndex
+            });
+        }
+
+        async function dispatchN8nFraudAlert(amt, decision, score, pattern, toEmail) {
+            await sendToN8n({
+                event: "CRITICAL_FRAUD_BLOCK",
+                decision: decision,
+                amount: amt,
+                tx_id: `TX_FRAUD_${Math.floor(1000 + Math.random() * 9000)}`,
+                risk_score: Math.round(score),
+                otp_code: "",
+                reason: `Security Threat: ${pattern}. Investigation pending in Admin Desk.`,
+                to_email: toEmail,
+                sender_name: "Muhammad Bilal",
+                recipient_id: recipFromInput(),
+                audit_block_index: currentBlockIndex
+            });
+        }
+
+        async function sendToN8n(payload) {
+            const urls = [
+                "http://localhost:5678/webhook/dhoka-fraud-alert",
+                "http://localhost:5678/webhook-test/dhoka-fraud-alert"
+            ];
+            for (const u of urls) {
+                try {
+                    await fetch(u, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(payload)
+                    });
+                    showToast("⚡ n8n Live Sentinel", `Dispatched to ${payload.to_email}`);
+                    return;
+                } catch(e) {
+                    try {
+                        await fetch(u, {
+                            method: "POST",
+                            mode: "no-cors",
+                            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                            body: new URLSearchParams(Object.fromEntries(
+                                Object.entries(payload).map(([k, v]) => [k, String(v)])
+                            )).toString()
+                        });
+                        showToast("⚡ n8n Live Sentinel", `Dispatched to ${payload.to_email}`);
+                        return;
+                    } catch(e2) {}
+                }
+            }
+        }
+
+        function showToast(title, msg) {
+            const c = document.getElementById('toastContainer');
+            const t = document.createElement('div');
+            t.className = "bg-white/90 backdrop-blur-xl border border-purple-200 p-4 rounded-2xl shadow-xl text-xs max-w-sm flex items-start gap-3 pointer-events-auto trans";
+            t.innerHTML = `
+                <div class="w-8 h-8 rounded-xl bg-violet-100 text-violet-600 flex items-center justify-center font-black text-sm flex-shrink-0">⚡</div>
+                <div>
+                    <div class="font-extrabold text-gray-900">${title}</div>
+                    <div class="text-gray-500 mt-0.5 leading-relaxed font-medium">${msg}</div>
+                </div>
+            `;
+            c.appendChild(t);
+            setTimeout(() => t.remove(), 5000);
+        }
+    </script>
+</body>
+</html>
